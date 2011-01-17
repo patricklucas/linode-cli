@@ -27,12 +27,93 @@ class DNS < LinodeEnv
     end
 end
 
+class DNSRecord
+    def initialize(record)
+        @record = record
+    end
+
+    def type
+        @record.type.downcase.to_sym
+    end
+end
+
+class DNSRecordA < DNSRecord
+    def to_s
+        unless @record.name.empty?
+            "A      #{@record.name}  #{@record.target}"
+        else
+            "A      #{@record.target}"
+        end
+    end
+end
+
+class DNSRecordAAAA < DNSRecord
+    def to_s
+        unless @record.name.empty?
+            "AAAA   #{@record.name}  #{@record.target}"
+        else
+            "AAAA   #{@record.target}"
+        end
+    end
+end
+
+class DNSRecordCNAME < DNSRecord
+    def to_s
+        "CNAME  #{@record.name}  #{@record.target}"
+    end
+end
+
+class DNSRecordMX < DNSRecord
+    def to_s
+        "MX     #{@record.target}  #{@record.priority}"
+    end
+end
+
+class DNSRecordTXT < DNSRecord
+    def to_s
+        unless @record.name.empty?
+            "TXT    #{@record.name}  #{@record.target}"
+        else
+            "TXT    #{@record.target}"
+        end
+    end
+end
+
 class DNSShow < LinodeEnv
     RecordTypes = [
         :a,
         :aaaa,
-        :cname
+        :cname,
+        :mx,
+        :txt
     ]
+
+    def getDomainId(domain)
+        ($l.domain.list.detect {|res| res.domain == domain}).domainid
+    end
+
+    def getRecords(domain)
+        records = []
+
+        domainid = getDomainId domain
+
+        $l.domain.resource.list(:domainid => domainid).each do |record|
+            case record.type.downcase.to_sym
+            when :a
+                records << DNSRecordA.new(record)
+            when :aaaa
+                records << DNSRecordAAAA.new(record)
+            when :cname
+                records << DNSRecordCNAME.new(record)
+            when :mx
+                records << DNSRecordMX.new(record)
+            when :txt
+                records << DNSRecordTXT.new(record)
+            end
+        end
+
+        return records
+    end
 
     def go(params)
         if RecordTypes.include? params[0].to_sym
@@ -43,27 +124,14 @@ class DNSShow < LinodeEnv
             domain = params[0]
         end
 
-        if type == :all
-            return
-        end
-
-        case type
-        when :a
-            fmt = lambda {|r| "A #{r.name}"}
-        when :aaaa
-            fmt = lambda {|r| "AAAA #{r.name}"}
-        when :cname
-            fmt = lambda {|r| "CNAME #{r.name}"}
-        when :mx
-            fmt = lambda {|r| "MX #{r.target}"}
-        end
-
-        domainid = ($l.domain.list.detect {|res| res.domain == domain}).domainid
-
-        records = $l.domain.resource.list(:domainid => domainid).select {|d| d.type.downcase.to_sym == type}
-
-        records.each do |r|
-            puts fmt.call r
+        unless type == :all
+            (getRecords(domain).select {|r| r.type == type}).each do |r|
+                puts r
+            end
+        else
+            getRecords(domain).each do |r|
+                puts r
+            end
         end
     end
 end
