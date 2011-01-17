@@ -1,0 +1,5 @@
+Read api key from config file, and allow to set on first run.
+
+> linode dns show patricklucas.net
+> API key not set!
+> Run: linode key set <api_key> to set
