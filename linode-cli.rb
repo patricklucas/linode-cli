@@ -80,16 +80,20 @@ class DNSRecordTXT < DNSRecord
 end
 
 class DNSShow < LinodeEnv
-    RecordTypes = [
-        :a,
-        :aaaa,
-        :cname,
-        :mx,
-        :txt
-    ]
+    RecordTypes = {
+        :a     => DNSRecordA,
+        :aaaa  => DNSRecordAAAA,
+        :cname => DNSRecordCNAME,
+        :mx    => DNSRecordMX,
+        :txt   => DNSRecordTXT
+    }
 
     def getDomainId(domain)
         ($l.domain.list.detect {|res| res.domain == domain}).domainid
+    end
+
+    def createDNSRecord(record)
+        RecordTypes[record.type.downcase.to_sym].new record
     end
 
     def getRecords(domain)
@@ -98,18 +102,7 @@ class DNSShow < LinodeEnv
         domainid = getDomainId domain
 
         $l.domain.resource.list(:domainid => domainid).each do |record|
-            case record.type.downcase.to_sym
-            when :a
-                records << DNSRecordA.new(record)
-            when :aaaa
-                records << DNSRecordAAAA.new(record)
-            when :cname
-                records << DNSRecordCNAME.new(record)
-            when :mx
-                records << DNSRecordMX.new(record)
-            when :txt
-                records << DNSRecordTXT.new(record)
-            end
+            records << createDNSRecord(record)
         end
 
         return records
