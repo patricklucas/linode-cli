@@ -120,12 +120,12 @@ class DNSShow < LinodeEnv
             exit 1
         end
 
-        unless RecordTypes.include? type
-            puts "Invalid DNS record type: #{type}"
-            exit 1
-        end
-
         unless type == :all
+            unless RecordTypes.include? type
+                puts "Invalid DNS record type: #{type}"
+                exit 1
+            end
+
             (getRecords(domain).select {|r| r.type == type}).each do |r|
                 puts r
             end
