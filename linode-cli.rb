@@ -109,12 +109,20 @@ class DNSShow < LinodeEnv
     end
 
     def go(params)
-        if RecordTypes.include? params[0].to_sym
-            type = params[0].to_sym
+        if params.size == 2
+            type = params[0].downcase.to_sym
             domain = params[1]
-        else
+        elsif params.size == 1
             type = :all
             domain = params[0]
+        else
+            puts 'Usage: linode dns show <type?> <domain>'
+            exit 1
+        end
+
+        unless RecordTypes.include? type
+            puts "Invalid DNS record type: #{type}"
+            exit 1
         end
 
         unless type == :all
