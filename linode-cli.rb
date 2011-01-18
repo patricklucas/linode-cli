@@ -11,28 +11,20 @@ def l
 end
 
 class Env
+    # Populate with usage string in subclass
+    @usage = nil
+
     def self.go(params)
+    end
+
+    def self.usage
+        puts @usage
     end
 end
 
 class SummaryEnv < Env
     def self.go(params)
         puts "linode"
-    end
-end
-
-class DNSEnv < Env
-    Commands = [
-        :show
-    ]
-
-    def self.go(params)
-        cmd = params[0].downcase.to_sym
-
-        case cmd
-        when :show
-            DNSShow::go params[1, params.size - 1]
-        end
     end
 end
 
@@ -75,7 +67,23 @@ class DNSRecord
     end
 end
 
+class DNSList < Env
+    def self.getDomains
+        l().domain.list.map {|domain| domain.domain}
+    end
+
+    def self.go(params)
+        puts 'All accessable domains:'
+
+        getDomains.each do |domain|
+            puts '  ' + domain
+        end
+    end
+end
+
 class DNSShow < Env
+    @usage = 'Usage: linode dns show <type?> <domain?>'
+
     def self.getDomainId(domain)
         (l().domain.list.detect {|res| res.domain == domain}).domainid
     end
@@ -131,7 +139,7 @@ class DNSShow < Env
             type = :all
             domain = :all
         else
-            puts 'Usage: linode dns show <type?> <domain?>'
+            usage
             exit 1
         end
         
@@ -159,6 +167,31 @@ class DNSShow < Env
                 puts '  ' + r.to_s
             end
         end
+    end
+end
+
+class DNSEnv < Env
+    Commands = {
+        :list => DNSList,
+        :show => DNSShow
+    }
+
+    @usage = 'Usage: linode dns <list, show> ...'
+
+    def self.go(params)
+        if params.size > 0
+            cmd = params[0].downcase.to_sym
+
+            unless Commands.include? cmd
+                puts "Invalid DNS query command: #{cmd}"
+                usage
+                exit 1
+            end
+        else
+            cmd = :list
+        end
+
+        Commands[cmd]::go params[1, params.size - 1]
     end
 end
 
