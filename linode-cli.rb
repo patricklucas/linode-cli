@@ -3,6 +3,13 @@
 require 'linode'
 require 'optparse'
 
+# Where to put this...
+class Array
+    def rest
+        self[1..-1]
+    end
+end
+
 # No, this isn't my API key. :)
 API_KEY = 'rxAbs8sQ4kZ0HVzC1BDDgIGBKNuuhvGckoIIkgUCnuLiHiCymSrwmKYuCXQxLaMf'
 
@@ -191,7 +198,7 @@ class DNSEnv < Env
             cmd = :list
         end
 
-        Commands[cmd]::go params[1, params.size - 1]
+        Commands[cmd]::go params.rest
     end
 end
 
@@ -214,4 +221,4 @@ unless ENVS.include? env
     exit 1
 end
 
-ENVS[env]::go ARGV[1, ARGV.size - 1]
+ENVS[env]::go ARGV.rest
