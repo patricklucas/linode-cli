@@ -76,7 +76,7 @@ end
 
 class DNSList < Env
     def self.getDomains
-        l().domain.list.map {|domain| domain.domain}
+        l.domain.list.map {|domain| domain.domain}
     end
 
     def self.go(params)
@@ -92,7 +92,7 @@ class DNSShow < Env
     @usage = 'Usage: linode dns show <type?> <domain?>'
 
     def self.getDomainId(domain)
-        (l().domain.list.detect {|res| res.domain == domain}).domainid
+        (l.domain.list.detect {|res| res.domain == domain}).domainid
     end
     
     def self.getDomainRecords(domain_id)
@@ -101,7 +101,7 @@ class DNSShow < Env
             records[type] = []
         end
         
-        l().domain.resource.list(:domainid => domain_id).each do |record|
+        l.domain.resource.list(:domainid => domain_id).each do |record|
             dns_record = DNSRecord.new record
             records[dns_record.type] << dns_record
         end
@@ -116,7 +116,7 @@ class DNSShow < Env
             domain_id = getDomainId domain
             domains[domain] = getDomainRecords domain_id
         else
-            domains_raw = l().domain.list
+            domains_raw = l.domain.list
             domains_raw.each do |domain_raw|
                 domains[domain_raw.domain] = getDomainRecords(domain_raw.domainid)
             end
