@@ -9,6 +9,10 @@ ENVS = [
 
 API_KEY = 'rxAbs8sQ4kZ0HVzC1BDDgIGBKNuuhvGckoIIkgUCnuLiHiCymSrwmKYuCXQxLaMf'
 
+def l
+    $l ||= Linode.new(:api_key => API_KEY)
+end
+
 class LinodeEnv
 end
 
@@ -68,7 +72,7 @@ end
 
 class DNSShow < LinodeEnv
     def getDomainId(domain)
-        ($l.domain.list.detect {|res| res.domain == domain}).domainid
+        (l().domain.list.detect {|res| res.domain == domain}).domainid
     end
 
     def getRecords(domain)
@@ -79,7 +83,7 @@ class DNSShow < LinodeEnv
 
         domainid = getDomainId domain
 
-        $l.domain.resource.list(:domainid => domainid).each do |record|
+        l().domain.resource.list(:domainid => domainid).each do |record|
             dns_record = DNSRecord.new record
             records[dns_record.type] << dns_record
         end
@@ -142,8 +146,6 @@ unless ENVS.include? env
     puts "Not valid env"
     exit 1
 end
-
-$l = Linode.new(:api_key => API_KEY)
 
 if env == :dns
     DNS.new.go ARGV[1, ARGV.length - 1]
