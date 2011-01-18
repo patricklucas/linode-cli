@@ -3,30 +3,34 @@
 require 'linode'
 require 'optparse'
 
-ENVS = [
-    :dns
-]
-
 API_KEY = 'rxAbs8sQ4kZ0HVzC1BDDgIGBKNuuhvGckoIIkgUCnuLiHiCymSrwmKYuCXQxLaMf'
 
 def l
     $l ||= Linode.new(:api_key => API_KEY)
 end
 
-class LinodeEnv
+class Env
+    def self.go(params)
+    end
 end
 
-class DNS < LinodeEnv
+class SummaryEnv < Env
+    def self.go(params)
+        puts "linode"
+    end
+end
+
+class DNSEnv < Env
     Commands = [
         :show
     ]
 
-    def go(params)
-        cmd = params[0].to_sym
+    def self.go(params)
+        cmd = params[0].downcase.to_sym
 
         case cmd
         when :show
-            DNSShow.new.go params[1, params.length - 1]
+            DNSShow::go params[1, params.length - 1]
         end
     end
 end
@@ -70,12 +74,12 @@ class DNSRecord
     end
 end
 
-class DNSShow < LinodeEnv
-    def getDomainId(domain)
+class DNSShow < Env
+    def self.getDomainId(domain)
         (l().domain.list.detect {|res| res.domain == domain}).domainid
     end
 
-    def getRecords(domain)
+    def self.getRecords(domain)
         records = {}
         for type in DNSRecord::RecordTypes
             records[type] = []
@@ -91,7 +95,7 @@ class DNSShow < LinodeEnv
         return records
     end
     
-    def go(params)
+    def self.go(params)
         if params.size == 2
             type = params[0].downcase.to_sym
             domain = params[1]
@@ -131,22 +135,16 @@ class DNSShow < LinodeEnv
     end
 end
 
-def do_summary
-    puts "linode"
-end
+ENVS = {
+    :summary => SummaryEnv,
+    :dns => DNSEnv,
+}
 
-if ARGV.size == 0
-    do_summary
-    exit
-end
-
-env = ARGV[0].to_sym
+env = ARGV[0] && ARGV[0].downcase.to_sym || :summary
 
 unless ENVS.include? env
     puts "Not valid env"
     exit 1
 end
 
-if env == :dns
-    DNS.new.go ARGV[1, ARGV.length - 1]
-end
+ENVS[env]::go ARGV[1, ARGV.length - 1]
