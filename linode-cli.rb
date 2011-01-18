@@ -78,21 +78,35 @@ class DNSShow < Env
     def self.getDomainId(domain)
         (l().domain.list.detect {|res| res.domain == domain}).domainid
     end
-
-    def self.getRecords(domain)
+    
+    def self.getDomainRecords(domain_id)
         records = {}
         for type in DNSRecord::RecordTypes
             records[type] = []
         end
-
-        domainid = getDomainId domain
-
-        l().domain.resource.list(:domainid => domainid).each do |record|
+        
+        l().domain.resource.list(:domainid => domain_id).each do |record|
             dns_record = DNSRecord.new record
             records[dns_record.type] << dns_record
         end
-
+        
         return records
+    end
+
+    def self.getRecords(domain)
+        domains = {}
+
+        unless domain == :all
+            domain_id = getDomainId domain
+            domains[domain] = getDomainRecords domain_id
+        else
+            domains_raw = l().domain.list
+            domains_raw.each do |domain_raw|
+                domains[domain_raw.domain] = getDomainRecords(domain_raw.domainid)
+            end
+        end
+
+        return domains
     end
     
     def self.go(params)
@@ -107,30 +121,32 @@ class DNSShow < Env
         elsif params.size == 1
             type = :all
             domain = params[0]
+        elsif params.size == 0
+            type = :all
+            domain = :all
         else
             puts 'Usage: linode dns show <type?> <domain>'
             exit 1
         end
         
-        records = getRecords(domain)
-        
-        if type == :all
-            records_to_show =
-                records[:a] +
-                records[:aaaa] +
-                records[:cname] +
-                records[:mx] +
-                records[:txt]
+        getRecords(domain).each do |domain, records|
+            if type == :all
+                records_to_show =
+                    records[:a] +
+                    records[:aaaa] +
+                    records[:cname] +
+                    records[:mx] +
+                    records[:txt]
+                
+                puts "Showing all records for #{domain}"
+            else
+                records_to_show = records[type]
+                puts "Showing #{type.upcase} records for #{domain}"
+            end
             
-            puts "Showing all records for #{domain}"
-        else
-            records_to_show = records[type]
-            
-            puts "Showing #{type.upcase} records for #{domain}"
-        end
-
-        records_to_show.each do |r|
-            puts r
+            records_to_show.each do |r|
+                puts '  ' + r.to_s
+            end
         end
     end
 end
