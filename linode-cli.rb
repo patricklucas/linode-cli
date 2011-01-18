@@ -80,7 +80,7 @@ class DNSList < Env
     end
 
     def self.go(params)
-        puts 'All accessable domains:'
+        puts 'All accessible domains:'
 
         getDomains.each do |domain|
             puts '  ' + domain
