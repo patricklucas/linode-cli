@@ -3,6 +3,7 @@
 require 'linode'
 require 'optparse'
 
+# No, this isn't my API key. :)
 API_KEY = 'rxAbs8sQ4kZ0HVzC1BDDgIGBKNuuhvGckoIIkgUCnuLiHiCymSrwmKYuCXQxLaMf'
 
 def l
