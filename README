@@ -20,3 +20,5 @@ Usage examples:
 
 Put a symlink in your ~/bin directory named 'linode' for super-easy access!
     ln -s path/to/linode-cli.rb ~/bin/linode
+
+Everything's in one file for ease of use as a script for now, but I plan to bundle it into a gem for proper packaging at some point.
