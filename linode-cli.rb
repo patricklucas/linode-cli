@@ -119,8 +119,13 @@ class DNSShow < Env
                 exit 1
             end
         elsif params.size == 1
-            type = :all
-            domain = params[0]
+            if DNSRecord::RecordTypes.include? params[0].downcase.to_sym
+                type = params[0].downcase.to_sym
+                domain = :all
+            else
+                type = :all
+                domain = params[0]
+            end
         elsif params.size == 0
             type = :all
             domain = :all
@@ -138,10 +143,15 @@ class DNSShow < Env
                     records[:mx] +
                     records[:txt]
                 
-                puts "Showing all records for #{domain}"
+                unless records_to_show.empty?
+                    puts "Showing all records for #{domain}"
+                end
             else
                 records_to_show = records[type]
-                puts "Showing #{type.upcase} records for #{domain}"
+                
+                unless records_to_show.empty?
+                    puts "Showing #{type.upcase} records for #{domain}"
+                end
             end
             
             records_to_show.each do |r|
