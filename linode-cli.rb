@@ -30,7 +30,7 @@ class DNSEnv < Env
 
         case cmd
         when :show
-            DNSShow::go params[1, params.length - 1]
+            DNSShow::go params[1, params.size - 1]
         end
     end
 end
@@ -130,7 +130,7 @@ class DNSShow < Env
             type = :all
             domain = :all
         else
-            puts 'Usage: linode dns show <type?> <domain>'
+            puts 'Usage: linode dns show <type?> <domain?>'
             exit 1
         end
         
@@ -180,4 +180,4 @@ unless ENVS.include? env
     exit 1
 end
 
-ENVS[env]::go ARGV[1, ARGV.length - 1]
+ENVS[env]::go ARGV[1, ARGV.size - 1]
