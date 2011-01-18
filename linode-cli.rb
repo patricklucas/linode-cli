@@ -135,9 +135,16 @@ class DNSShow < Env
     end
 end
 
+class LinodeEnv < Env
+    def self.go(params)
+        puts "whee"
+    end
+end
+
 ENVS = {
     :summary => SummaryEnv,
     :dns => DNSEnv,
+    :l => LinodeEnv
 }
 
 env = ARGV[0] && ARGV[0].downcase.to_sym || :summary
