@@ -28,6 +28,8 @@ class DNS < LinodeEnv
 end
 
 class DNSRecord
+    RecordTypes = [:a, :aaaa, :cname, :mx, :txt]
+    
     def initialize(record)
         @record = record
     end
@@ -35,83 +37,65 @@ class DNSRecord
     def type
         @record.type.downcase.to_sym
     end
-end
-
-class DNSRecordA < DNSRecord
+    
     def to_s
-        unless @record.name.empty?
-            "A      #{@record.name}  #{@record.target}"
-        else
-            "A      #{@record.target}"
-        end
-    end
-end
-
-class DNSRecordAAAA < DNSRecord
-    def to_s
-        unless @record.name.empty?
-            "AAAA   #{@record.name}  #{@record.target}"
-        else
-            "AAAA   #{@record.target}"
-        end
-    end
-end
-
-class DNSRecordCNAME < DNSRecord
-    def to_s
-        "CNAME  #{@record.name}  #{@record.target}"
-    end
-end
-
-class DNSRecordMX < DNSRecord
-    def to_s
-        "MX     #{@record.target}  #{@record.priority}"
-    end
-end
-
-class DNSRecordTXT < DNSRecord
-    def to_s
-        unless @record.name.empty?
-            "TXT    #{@record.name}  #{@record.target}"
-        else
-            "TXT    #{@record.target}"
+        case type
+        when :a
+            unless @record.name.empty?
+                "A      #{@record.name}  #{@record.target}"
+            else
+                "A      #{@record.target}"
+            end
+        when :aaaa
+            unless @record.name.empty?
+                "AAAA   #{@record.name}  #{@record.target}"
+            else
+                "AAAA   #{@record.target}"
+            end
+        when :cname
+            "CNAME  #{@record.name}  #{@record.target}"
+        when :mx
+            "MX     #{@record.target}  #{@record.priority}"
+        when :txt
+            unless @record.name.empty?
+                "TXT    #{@record.name}  #{@record.target}"
+            else
+                "TXT    #{@record.target}"
+            end
         end
     end
 end
 
 class DNSShow < LinodeEnv
-    RecordTypes = {
-        :a     => DNSRecordA,
-        :aaaa  => DNSRecordAAAA,
-        :cname => DNSRecordCNAME,
-        :mx    => DNSRecordMX,
-        :txt   => DNSRecordTXT
-    }
-
     def getDomainId(domain)
         ($l.domain.list.detect {|res| res.domain == domain}).domainid
     end
 
-    def createDNSRecord(record)
-        RecordTypes[record.type.downcase.to_sym].new record
-    end
-
     def getRecords(domain)
-        records = []
+        records = {}
+        for type in DNSRecord::RecordTypes
+            records[type] = []
+        end
 
         domainid = getDomainId domain
 
         $l.domain.resource.list(:domainid => domainid).each do |record|
-            records << createDNSRecord(record)
+            dns_record = DNSRecord.new record
+            records[dns_record.type] << dns_record
         end
 
         return records
     end
-
+    
     def go(params)
         if params.size == 2
             type = params[0].downcase.to_sym
             domain = params[1]
+            
+            unless DNSRecord::RecordTypes.include? type
+                puts "Invalid DNS record type: #{type}"
+                exit 1
+            end
         elsif params.size == 1
             type = :all
             domain = params[0]
@@ -119,20 +103,26 @@ class DNSShow < LinodeEnv
             puts 'Usage: linode dns show <type?> <domain>'
             exit 1
         end
-
-        unless type == :all
-            unless RecordTypes.include? type
-                puts "Invalid DNS record type: #{type}"
-                exit 1
-            end
-
-            (getRecords(domain).select {|r| r.type == type}).each do |r|
-                puts r
-            end
+        
+        records = getRecords(domain)
+        
+        if type == :all
+            records_to_show =
+                records[:a] +
+                records[:aaaa] +
+                records[:cname] +
+                records[:mx] +
+                records[:txt]
+            
+            puts "Showing all records for #{domain}"
         else
-            getRecords(domain).each do |r|
-                puts r
-            end
+            records_to_show = records[type]
+            
+            puts "Showing #{type.upcase} records for #{domain}"
+        end
+
+        records_to_show.each do |r|
+            puts r
         end
     end
 end
