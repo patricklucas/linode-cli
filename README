@@ -1,0 +1,22 @@
+Currently, only the DNS module is in-place, and it is display only.
+
+Usage examples:
+
+ - Show all A DNS records for example.com:
+
+        ./linode-cli.rb dns show a example.com
+
+ - Show all DNS records for example.com:
+
+        ./linode-cli.rb dns show example.com
+
+ - Show all CNAME DNS records for all accessible domains:
+
+        ./linode-cli.rb dns show cname
+
+ - Show all DNS records for all accessible domains:
+
+        ./linode-cli.rb dns show
+
+Put a symlink in your ~/bin directory named 'linode' for super-easy access!
+    ln -s path/to/linode-cli.rb ~/bin/linode
