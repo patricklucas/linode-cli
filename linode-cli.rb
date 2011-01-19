@@ -74,23 +74,11 @@ class DNSRecord
     end
 end
 
-class DNSList < Env
-    def self.getDomains
+class DNSUtil
+    def self.getDomainNames
         l.domain.list.map {|domain| domain.domain}
     end
-
-    def self.go(params)
-        puts 'All accessible domains:'
-
-        getDomains.each do |domain|
-            puts '  ' + domain
-        end
-    end
-end
-
-class DNSShow < Env
-    @usage = 'Usage: linode dns show <type?> <domain?>'
-
+    
     def self.getDomainId(domain)
         (l.domain.list.detect {|res| res.domain == domain}).domainid
     end
@@ -108,7 +96,7 @@ class DNSShow < Env
         
         return records
     end
-
+    
     def self.getRecords(domain)
         domains = {}
 
@@ -124,6 +112,20 @@ class DNSShow < Env
 
         return domains
     end
+end
+
+class DNSList < Env
+    def self.go(params)
+        puts 'All accessible domains:'
+
+        DNSUtil::getDomainNames.each do |domain|
+            puts '  ' + domain
+        end
+    end
+end
+
+class DNSShow < Env
+    @usage = 'Usage: linode dns show <type?> <domain?>'
     
     def self.go(params)
         if params.size == 2
@@ -150,7 +152,7 @@ class DNSShow < Env
             exit 1
         end
         
-        getRecords(domain).each do |domain, records|
+        DNSUtil::getRecords(domain).each do |domain, records|
             if type == :all
                 records_to_show =
                     records[:a] +
