@@ -25,7 +25,7 @@ class Env
     end
 
     def self.usage
-        puts @usage
+        puts "Usage: #{@usage}"
     end
 end
 
@@ -125,7 +125,7 @@ class DNSList < Env
 end
 
 class DNSShow < Env
-    @usage = 'Usage: linode dns show <type?> <domain?>'
+    @usage = 'dns show <type?> <domain?>'
     
     def self.go(params)
         if params.size == 2
@@ -185,7 +185,7 @@ class DNSEnv < Env
         :show => DNSShow
     }
 
-    @usage = 'Usage: linode dns <list, show> ...'
+    @usage = 'linode dns <list, show> ...'
 
     def self.go(params)
         if params.size > 0
