@@ -18,6 +18,10 @@ Usage examples:
 
         ./linode-cli.rb dns show
 
+ - Add an A DNS record named 'test' to example.com:
+ 
+        ./linode-cli.rb dns add a example.com test
+ 
 Put a symlink in your ~/bin directory named 'linode' for super-easy access!
     ln -s path/to/linode-cli.rb ~/bin/linode
 
