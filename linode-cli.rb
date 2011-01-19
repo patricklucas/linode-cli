@@ -179,10 +179,35 @@ class DNSShow < Env
     end
 end
 
+class DNSAdd < Env
+    def self.go(params)
+        @usage = 'dns add <domain> <host> <ip>'
+        
+        unless params.size == 3
+            usage
+            exit 1
+        end
+        
+        domain = params[0]
+        host = params[1]
+        ip = params[2]
+        
+        domainid = DNSUtil::getDomainId domain
+        
+        l.domain.resource.create(
+            :domainid => domainid,
+            :type => 'a',
+            :name => host,
+            :target => ip
+        )
+    end
+end
+
 class DNSEnv < Env
     Commands = {
         :list => DNSList,
-        :show => DNSShow
+        :show => DNSShow,
+        :add => DNSAdd
     }
 
     @usage = 'linode dns <list, show> ...'
