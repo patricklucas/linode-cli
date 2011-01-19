@@ -83,6 +83,12 @@ class DNSUtil
         (l.domain.list.detect {|res| res.domain == domain}).domainid
     end
     
+    def self.getResourceId(domainid, type, name)
+        (l.domain.resource.list(:domainid => domainid).detect {|res|
+            res.type.downcase == type.to_s and res.name == name
+        }).resourceid
+    end
+    
     def self.getDomainRecords(domain_id)
         records = {}
         for type in DNSRecord::RecordTypes
@@ -203,11 +209,34 @@ class DNSAdd < Env
     end
 end
 
+class DNSDel < Env
+    def self.go(params)
+        @usage = 'dns del <domain> <host>'
+        
+        unless params.size == 2
+            usage
+            exit 1
+        end
+        
+        domain = params[0]
+        host = params[1]
+        
+        domainid = DNSUtil::getDomainId domain
+        resourceid = DNSUtil::getResourceId domainid, :a, host
+        
+        l.domain.resource.delete(
+            :domainid => domainid,
+            :resourceid => resourceid
+        )
+    end
+end
+
 class DNSEnv < Env
     Commands = {
         :list => DNSList,
         :show => DNSShow,
-        :add => DNSAdd
+        :add => DNSAdd,
+        :del => DNSDel
     }
 
     @usage = 'linode dns <list, show> ...'
