@@ -10,11 +10,12 @@ class Array
     end
 end
 
-# No, this isn't my API key. :)
-API_KEY = 'rxAbs8sQ4kZ0HVzC1BDDgIGBKNuuhvGckoIIkgUCnuLiHiCymSrwmKYuCXQxLaMf'
-
 def l
-    $l ||= Linode.new(:api_key => API_KEY)
+    if not ENV.has_key?('LINODE_API_KEY')
+        puts "You define environment variable LINODE_API_KEY"
+        exit 1
+    end
+    $l ||= Linode.new(:api_key => ENV['LINODE_API_KEY'])
 end
 
 class Env
@@ -198,10 +199,40 @@ class DNSAdd < Env
         host = params[1]
         ip = params[2]
         
+        host = '' if host == '@'
+
         domainid = DNSUtil::getDomainId domain
         
         l.domain.resource.create(
             :domainid => domainid,
+            :type => 'a',
+            :name => host,
+            :target => ip
+        )
+    end
+end
+
+class DNSUpdate < Env
+    def self.go(params)
+        @usage = 'dns update <domain> <host> <ip>'
+        
+        unless params.size == 3
+            usage
+            exit 1
+        end
+        
+        domain = params[0]
+        host = params[1]
+        ip = params[2]
+
+        host = '' if host == '@'
+        
+        domainid = DNSUtil::getDomainId domain
+        resourceid = DNSUtil::getResourceId domainid, :a, host
+        
+        l.domain.resource.update(
+            :domainid => domainid,
+            :resourceid => resourceid,
             :type => 'a',
             :name => host,
             :target => ip
@@ -220,6 +251,8 @@ class DNSDel < Env
         
         domain = params[0]
         host = params[1]
+
+        host = '' if host == '@'
         
         domainid = DNSUtil::getDomainId domain
         resourceid = DNSUtil::getResourceId domainid, :a, host
@@ -236,10 +269,11 @@ class DNSEnv < Env
         :list => DNSList,
         :show => DNSShow,
         :add => DNSAdd,
+        :update => DNSUpdate,
         :del => DNSDel
     }
 
-    @usage = 'linode dns <list, show> ...'
+    @usage = 'linode dns <list, show, add, update, del> ...'
 
     def self.go(params)
         if params.size > 0
