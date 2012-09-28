@@ -20,11 +20,15 @@ Usage examples:
 
  - Add an A DNS record named 'test' to example.com:
  
-        ./linode-cli.rb dns add a example.com test
+        ./linode-cli.rb dns add example.com test 192.168.1.3
+
+ - Update an the IP for a A DNS record named 'test' at example.com:
+ 
+        ./linode-cli.rb dns update example.com test 192.168.1.4
 
  - Delete an A DNS record named 'test' from example.com:
  
-        ./linode-cli.rb dns del a example.com test
+        ./linode-cli.rb dns del example.com test
  
 Put a symlink in your ~/bin directory named 'linode' for super-easy access!
     ln -s path/to/linode-cli.rb ~/bin/linode
