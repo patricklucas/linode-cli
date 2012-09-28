@@ -199,6 +199,8 @@ class DNSAdd < Env
         host = params[1]
         ip = params[2]
         
+        host = '' if host == '@'
+
         domainid = DNSUtil::getDomainId domain
         
         l.domain.resource.create(
@@ -222,6 +224,8 @@ class DNSUpdate < Env
         domain = params[0]
         host = params[1]
         ip = params[2]
+
+        host = '' if host == '@'
         
         domainid = DNSUtil::getDomainId domain
         resourceid = DNSUtil::getResourceId domainid, :a, host
@@ -247,6 +251,8 @@ class DNSDel < Env
         
         domain = params[0]
         host = params[1]
+
+        host = '' if host == '@'
         
         domainid = DNSUtil::getDomainId domain
         resourceid = DNSUtil::getResourceId domainid, :a, host
