@@ -210,6 +210,32 @@ class DNSAdd < Env
     end
 end
 
+class DNSUpdate < Env
+    def self.go(params)
+        @usage = 'dns update <domain> <host> <ip>'
+        
+        unless params.size == 3
+            usage
+            exit 1
+        end
+        
+        domain = params[0]
+        host = params[1]
+        ip = params[2]
+        
+        domainid = DNSUtil::getDomainId domain
+        resourceid = DNSUtil::getResourceId domainid, :a, host
+        
+        l.domain.resource.update(
+            :domainid => domainid,
+            :resourceid => resourceid,
+            :type => 'a',
+            :name => host,
+            :target => ip
+        )
+    end
+end
+
 class DNSDel < Env
     def self.go(params)
         @usage = 'dns del <domain> <host>'
@@ -237,10 +263,11 @@ class DNSEnv < Env
         :list => DNSList,
         :show => DNSShow,
         :add => DNSAdd,
+        :update => DNSUpdate,
         :del => DNSDel
     }
 
-    @usage = 'linode dns <list, show> ...'
+    @usage = 'linode dns <list, show, add, update, del> ...'
 
     def self.go(params)
         if params.size > 0
