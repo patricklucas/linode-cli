@@ -10,11 +10,12 @@ class Array
     end
 end
 
-# No, this isn't my API key. :)
-API_KEY = 'rxAbs8sQ4kZ0HVzC1BDDgIGBKNuuhvGckoIIkgUCnuLiHiCymSrwmKYuCXQxLaMf'
-
 def l
-    $l ||= Linode.new(:api_key => API_KEY)
+    if not ENV.has_key?('LINODE_API_KEY')
+        puts "You define environment variable LINODE_API_KEY"
+        exit 1
+    end
+    $l ||= Linode.new(:api_key => ENV['LINODE_API_KEY'])
 end
 
 class Env
