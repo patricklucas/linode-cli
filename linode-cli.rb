@@ -51,13 +51,13 @@ class DNSRecord
     def to_s
         case type
         when :a
-            unless @record.name.empty?
+            unless @record.name.to_s.empty?
                 "A      #{@record.name}  #{@record.target}"
             else
                 "A      #{@record.target}"
             end
         when :aaaa
-            unless @record.name.empty?
+            unless @record.name.to_s.empty?
                 "AAAA   #{@record.name}  #{@record.target}"
             else
                 "AAAA   #{@record.target}"
