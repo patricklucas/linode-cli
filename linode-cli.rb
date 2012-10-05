@@ -12,7 +12,7 @@ end
 
 def l
     if not ENV.has_key?('LINODE_API_KEY')
-        puts "You define environment variable LINODE_API_KEY"
+        puts "You must defined the environment variable LINODE_API_KEY"
         exit 1
     end
     $l ||= Linode.new(:api_key => ENV['LINODE_API_KEY'])
