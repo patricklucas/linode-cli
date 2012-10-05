@@ -1,4 +1,9 @@
-Currently, only the DNS module is in-place, and it is display only.
+linode-cli
+==========
+
+The purpose of this project is to provide a quick command line interface to common Linode administration tasks.
+
+Currently, only the DNS module is in-place. This lets you view and manipulate A, AAAA, CNAME, MX, and TXT DNS records for any domain for which your Linode API key has access.
 
 Usage examples:
 
@@ -30,7 +35,6 @@ Usage examples:
  
         ./linode-cli.rb dns del example.com test
  
-Put a symlink in your ~/bin directory named 'linode' for super-easy access!
-    ln -s path/to/linode-cli.rb ~/bin/linode
+Put a symlink in your `~/bin` directory named 'linode' for super-easy access! `ln -s path/to/linode-cli.rb ~/bin/linode`
 
 Everything's in one file for ease of use as a script for now, but I plan to bundle it into a gem for proper packaging at some point.
